@@ -6,7 +6,6 @@ import dev.orisha.book_service.dto.BookDto;
 import dev.orisha.book_service.dto.responses.ApiResponse;
 import dev.orisha.book_service.exceptions.ResourceNotFoundException;
 import dev.orisha.book_service.services.BookService;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ import java.util.List;
 import static java.time.LocalDateTime.now;
 
 @Service
-@Slf4j
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final ModelMapper modelMapper;
@@ -41,6 +39,7 @@ public class BookServiceImpl implements BookService {
         Book book = findBookBy(bookDto.getId());
         modelMapper.map(bookDto, book);
         book = bookRepository.save(book);
+        System.out.println(book.getTitle());
         bookDto = modelMapper.map(book, BookDto.class);
         return new ApiResponse<>(now(), true, bookDto);
     }

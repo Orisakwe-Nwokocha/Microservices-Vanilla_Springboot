@@ -36,7 +36,6 @@ public class User {
     @Enumerated(STRING)
     private Set<Authority> authorities;
 
-
     @Setter(AccessLevel.NONE)
     private LocalDateTime dateRegistered;
 
