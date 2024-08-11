@@ -39,7 +39,6 @@ public class BookServiceImpl implements BookService {
         Book book = findBookBy(bookDto.getId());
         modelMapper.map(bookDto, book);
         book = bookRepository.save(book);
-        System.out.println(book.getTitle());
         bookDto = modelMapper.map(book, BookDto.class);
         return new ApiResponse<>(now(), true, bookDto);
     }

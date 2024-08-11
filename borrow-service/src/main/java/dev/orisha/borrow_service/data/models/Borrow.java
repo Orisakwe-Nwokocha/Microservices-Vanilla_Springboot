@@ -1,7 +1,5 @@
 package dev.orisha.borrow_service.data.models;
 
-
-import dev.orisha.book_service.data.constants.Genre;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,32 +7,29 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
 
 @Entity
-@Table(name = "books")
+@Table(name = "book_loans")
 @Getter
 @Setter
 public class Borrow {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
-    private String title;
-    private String author;
-    @Column(unique = true, nullable = false)
-    private String isbn;
-    @Enumerated(STRING)
-    private Genre genre;
+
+    private String email;
 
     @Setter(AccessLevel.NONE)
-    private LocalDateTime dateCreated;
+    private LocalDateTime borrowedAt;
+
+    private LocalDateTime returnedAt;
 
 
     @PrePersist
     private void setDateCreated() {
-        dateCreated = now();
+        borrowedAt = now();
     }
 }
 

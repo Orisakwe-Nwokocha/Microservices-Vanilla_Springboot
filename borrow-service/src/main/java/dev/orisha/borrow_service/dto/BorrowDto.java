@@ -1,6 +1,5 @@
 package dev.orisha.borrow_service.dto;
 
-import dev.orisha.book_service.data.constants.Genre;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,5 +10,4 @@ public class BorrowDto {
     private String title;
     private String author;
     private String isbn;
-    private Genre genre;
 }

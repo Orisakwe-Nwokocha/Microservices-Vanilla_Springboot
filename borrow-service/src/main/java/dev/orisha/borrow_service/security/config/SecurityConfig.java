@@ -1,11 +1,10 @@
 package dev.orisha.borrow_service.security.config;
 
-import dev.orisha.book_service.security.filters.CustomAuthorizationFilter;
-import dev.orisha.book_service.security.filters.CustomUsernamePasswordAuthenticationFilter;
-import lombok.AllArgsConstructor;
+import dev.orisha.borrow_service.security.filters.CustomAuthorizationFilter;
+import dev.orisha.borrow_service.security.filters.CustomUsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,17 +17,19 @@ import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
 
-
-import static dev.orisha.book_service.security.utils.SecurityUtils.PUBLIC_ENDPOINTS;
+import static dev.orisha.borrow_service.security.utils.SecurityUtils.PUBLIC_ENDPOINTS;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
 @EnableWebSecurity
-@AllArgsConstructor
 public class SecurityConfig {
 
-    private final AuthenticationManager authenticationManager;
     private final CustomAuthorizationFilter authorizationFilter;
+
+    @Autowired
+    public SecurityConfig(CustomAuthorizationFilter authorizationFilter) {
+        this.authorizationFilter = authorizationFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
