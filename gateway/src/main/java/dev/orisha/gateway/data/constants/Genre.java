@@ -1,4 +1,4 @@
-package dev.orisha.borrow_service.data.constants;
+package dev.orisha.gateway.data.constants;
 
 public enum Genre {
     ACTION, COMEDY, DRAMA, GENERAL, FICTION

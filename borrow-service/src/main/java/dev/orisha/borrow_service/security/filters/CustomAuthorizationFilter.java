@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import dev.orisha.book_service.config.AppConfig;
+import dev.orisha.borrow_service.config.AppConfig;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,8 +23,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-import static dev.orisha.book_service.security.utils.SecurityUtils.JWT_PREFIX;
-import static dev.orisha.book_service.security.utils.SecurityUtils.PUBLIC_ENDPOINTS;
+import static dev.orisha.borrow_service.security.utils.SecurityUtils.JWT_PREFIX;
+import static dev.orisha.borrow_service.security.utils.SecurityUtils.PUBLIC_ENDPOINTS;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 

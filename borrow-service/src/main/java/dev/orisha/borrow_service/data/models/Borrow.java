@@ -21,6 +21,8 @@ public class Borrow {
 
     private String email;
 
+    private Long bookId;
+
     @Setter(AccessLevel.NONE)
     private LocalDateTime borrowedAt;
 

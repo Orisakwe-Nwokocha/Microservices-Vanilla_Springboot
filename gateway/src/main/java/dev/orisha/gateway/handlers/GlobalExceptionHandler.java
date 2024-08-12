@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 
@@ -54,8 +55,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception, HttpServletRequest request) {
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception,
+                                                                   HttpServletRequest request) {
         ErrorResponse response = buildErrorResponse("BadRequest", exception.getMessage(), request);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<?> handleHttpClientErrorException(HttpClientErrorException exception,
+                                                            HttpServletRequest request) {
+        ErrorResponse response = buildErrorResponse("ClientError", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 

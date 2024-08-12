@@ -10,11 +10,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static java.time.LocalDateTime.now;
-import static java.time.temporal.ChronoUnit.HOURS;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 public class CustomUsernamePasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
