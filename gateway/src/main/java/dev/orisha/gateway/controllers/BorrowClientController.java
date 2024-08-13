@@ -17,6 +17,7 @@ import java.util.List;
 
 import static dev.orisha.gateway.controllers.utils.ControllerUtils.getHttpEntity;
 import static dev.orisha.gateway.controllers.utils.ControllerUtils.getServiceInstances;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
@@ -25,6 +26,7 @@ import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 @Slf4j
 public class BorrowClientController {
 
+    public static final String BORROW_SERVICE = "borrow-service";
     private final RestTemplate restTemplate;
     private final DiscoveryClient discoveryClient;
 
@@ -35,32 +37,39 @@ public class BorrowClientController {
         this.discoveryClient = discoveryClient;
     }
 
+
     @PostMapping("/{bookId}")
-    public ResponseEntity<?> borrow(@RequestHeader("Authorization") String token,
-                                    @PathVariable String bookId) {
-        log.info("Trying to borrow book with id {}", bookId);
+    public ResponseEntity<?> borrow(@RequestHeader(AUTHORIZATION) String token, @PathVariable String bookId) {
+        log.info("Trying to borrow book with id: {} from service: {}", bookId, BORROW_SERVICE);
         return getResponseEntity(token, bookId, POST);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> returnBook(@RequestHeader("Authorization") String token,
-                                        @PathVariable String id) {
+    public ResponseEntity<?> returnBook(@RequestHeader(AUTHORIZATION) String token,
+                                                                    @PathVariable String id) {
         log.info("Returning book with id {}", id);
         return getResponseEntity(token, id, PUT);
     }
 
-    private ResponseEntity<?> getResponseEntity(@RequestHeader("Authorization") String token,
-                                                @PathVariable String id, HttpMethod method) {
-        List<ServiceInstance> instances = getServiceInstances(discoveryClient, "borrow-service");
-        if (instances.isEmpty()) return ResponseEntity.status(SERVICE_UNAVAILABLE).build();
+
+    private ResponseEntity<?> getResponseEntity(@RequestHeader(AUTHORIZATION) String token,
+                                                    @PathVariable String id, HttpMethod method) {
+        List<ServiceInstance> instances = getServiceInstances(discoveryClient, BORROW_SERVICE);
+        if (instances.isEmpty()) return errorResponse();
+
         String baseUrl = instances.getFirst().getUri().toString();
         String url = baseUrl + "/borrow/" + id;
-
         HttpEntity<String> entity = getHttpEntity(token);
         ParameterizedTypeReference<ApiResponse<BorrowBookResponse>> responseType = new ParameterizedTypeReference<>() {};
         ResponseEntity<ApiResponse<BorrowBookResponse>> response = restTemplate.exchange(url, method, entity, responseType);
 
+        log.info("Response successfully returned from service: {}", BORROW_SERVICE);
         return ResponseEntity.ok(response.getBody());
+    }
+
+    private static ResponseEntity<Object> errorResponse() {
+        log.error("No instances found for service: {}", BORROW_SERVICE);
+        return ResponseEntity.status(SERVICE_UNAVAILABLE).build();
     }
 
 
