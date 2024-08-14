@@ -8,6 +8,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static java.lang.Boolean.FALSE;
 import static java.time.LocalDateTime.now;
 
 @Entity
@@ -22,6 +23,8 @@ public class Borrow {
     private String email;
 
     private Long bookId;
+
+    private Boolean isReturned = FALSE;
 
     @Setter(AccessLevel.NONE)
     private LocalDateTime borrowedAt;

@@ -12,7 +12,7 @@ spring:
         - id: borrow-service
           uri: lb://borrow-service
           predicates:
-            - Path=/borrows/**
+            - Path=/borrow/**
         - id: user-service
           uri: lb://user-service
           predicates:

@@ -19,6 +19,7 @@ public class BorrowBookResponse {
     private Long id;
     private String email;
     private Long bookId;
+    private Boolean isReturned;
     @JsonFormat(pattern = "dd-MMMM-yyyy 'at' hh:mm a")
     private LocalDateTime borrowedAt;
     @JsonFormat(pattern = "dd-MMMM-yyyy 'at' hh:mm a")
