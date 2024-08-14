@@ -1,7 +1,9 @@
-package dev.orisha.book_service.handlers;
+package dev.orisha.user_service.handlers;
 
-import dev.orisha.book_service.dto.responses.ErrorResponse;
-import dev.orisha.book_service.exceptions.ResourceNotFoundException;
+import dev.orisha.user_service.dto.responses.ErrorResponse;
+import dev.orisha.user_service.exceptions.EmailExistsException;
+import dev.orisha.user_service.exceptions.ResourceNotFoundException;
+import dev.orisha.user_service.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,6 +28,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleIllegalStateException(IllegalStateException exception, HttpServletRequest request) {
         logExceptionMessage(exception.getMessage());
         ErrorResponse response = buildErrorResponse("IllegalState", exception.getMessage(), request);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(EmailExistsException.class)
+    public ResponseEntity<?> handleEmailExistsException(EmailExistsException exception, HttpServletRequest request) {
+        logExceptionMessage(exception.getMessage());
+        ErrorResponse response = buildErrorResponse("EmailExists", exception.getMessage(), request);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException exception, HttpServletRequest request) {
+        logExceptionMessage(exception.getMessage());
+        ErrorResponse response = buildErrorResponse("UserNotFound", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 
