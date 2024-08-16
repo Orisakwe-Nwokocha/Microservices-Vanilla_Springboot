@@ -29,7 +29,6 @@ Description:
 
 Responsibilities:
 * Routing requests to user-service, book-service, and borrow-service.
-* Managing cross-service authentication and authorization.
 * Providing a unified API endpoint for clients.
 
 Configuration:
