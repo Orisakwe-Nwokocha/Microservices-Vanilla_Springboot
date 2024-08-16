@@ -18,7 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Objects;
 
-import static dev.orisha.borrow_service.services.utils.BorrowServiceUtils.buildResponse;
 import static dev.orisha.borrow_service.services.utils.BorrowServiceUtils.fetchBookFromGateway;
 import static java.lang.Boolean.TRUE;
 import static java.time.LocalDateTime.now;
@@ -39,7 +38,7 @@ public class BorrowServiceImpl implements BorrowService {
         log.info("Borrow book request by user: {}", email);
         BookDto bookDto = getBookDetailsFromGateway(token, bookId);
         Borrow borrow = saveBorrowEntity(bookId, email);
-        BorrowBookResponse response = buildResponse(borrow, bookDto, modelMapper);
+        BorrowBookResponse response = buildResponse(borrow, bookDto);
         log.info("Book borrowed successfully : {}", response);
         return new ApiResponse<>(now(), true, response);
     }
@@ -54,20 +53,26 @@ public class BorrowServiceImpl implements BorrowService {
     }
 
     @Override
-    public ApiResponse<List<BorrowBookResponse>> findAllBorrowedBooksFor(String email) {
+    public ApiResponse<List<BorrowBookResponse>> findAllBorrowRecordsFor(String email) {
         log.info("Request to retrieve all borrowed books for : {}", email);
         var borrowedBooks = borrowRepository.findAllBorrowedBooksFor(email);
         List<BorrowBookResponse> response = List.of(modelMapper.map(borrowedBooks, BorrowBookResponse[].class));
-        log.info("Borrowed books for user : {} retrieved successfully : {}", email, response);
+        log.info("Borrowed records for user : {} retrieved successfully : {}", email, response);
         return new ApiResponse<>(now(), true, response);
     }
 
     private Borrow updateBorrowEntity(Long id) {
         Borrow borrow = borrowRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Book loan details not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Borrow record not found"));
         borrow.setIsReturned(TRUE);
         borrow.setReturnedAt(now());
         return borrowRepository.save(borrow);
+    }
+
+    private BorrowBookResponse buildResponse(Borrow borrow, BookDto bookDto) {
+        BorrowBookResponse borrowBookResponse = modelMapper.map(borrow, BorrowBookResponse.class);
+        borrowBookResponse.setBook(bookDto);
+        return borrowBookResponse;
     }
 
     private Borrow saveBorrowEntity(Long bookId, String email) {
@@ -79,7 +84,8 @@ public class BorrowServiceImpl implements BorrowService {
 
     private BookDto getBookDetailsFromGateway(String token, Long bookId) {
         log.info("Fetching book from book-service via gateway");
-        ResponseEntity<ApiResponse<BookDto>> response = fetchBookFromGateway(discoveryClient, restTemplate, token, bookId);
+        ResponseEntity<ApiResponse<BookDto>> response =
+                            fetchBookFromGateway(discoveryClient, restTemplate, token, bookId);
         log.info("Fetched book successfully");
         return Objects.requireNonNull(response.getBody()).getData();
     }

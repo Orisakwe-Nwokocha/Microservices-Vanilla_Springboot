@@ -33,12 +33,6 @@ public class BorrowServiceUtils {
         return restTemplate.exchange(url, GET, entity, responseType);
     }
 
-    public static BorrowBookResponse buildResponse(Borrow borrow, BookDto bookDto, ModelMapper modelMapper) {
-        BorrowBookResponse borrowBookResponse = modelMapper.map(borrow, BorrowBookResponse.class);
-        borrowBookResponse.setBook(bookDto);
-        return borrowBookResponse;
-    }
-
     private static String getRouteForBookService(DiscoveryClient discoveryClient, Long bookId) {
         List<ServiceInstance> instances = discoveryClient.getInstances("gateway-reactive");
         if (instances.isEmpty()) throw new IllegalStateException("No instances of gateway found");

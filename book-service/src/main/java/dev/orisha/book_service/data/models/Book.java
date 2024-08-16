@@ -23,7 +23,7 @@ public class Book {
     private Long id;
     private String title;
     private String author;
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String isbn;
     @Enumerated(STRING)
     private Genre genre;

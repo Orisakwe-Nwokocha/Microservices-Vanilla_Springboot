@@ -8,5 +8,5 @@ import java.util.List;
 public interface BorrowService {
     ApiResponse<BorrowBookResponse> borrowBook(Long bookId, String token, String email);
     ApiResponse<BorrowBookResponse> returnBook(Long id);
-    ApiResponse<List<BorrowBookResponse>> findAllBorrowedBooksFor(String email);
+    ApiResponse<List<BorrowBookResponse>> findAllBorrowRecordsFor(String email);
 }

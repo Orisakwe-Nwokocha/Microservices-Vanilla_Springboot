@@ -36,9 +36,9 @@ public class BorrowController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getBorrowedBooks(Principal principal) {
+    public ResponseEntity<?> getAllBorrowRecordsFor(Principal principal) {
         log.debug("REST request to get all books");
-        return ResponseEntity.ok(borrowService.findAllBorrowedBooksFor(principal.getName()));
+        return ResponseEntity.ok(borrowService.findAllBorrowRecordsFor(principal.getName()));
     }
 
 }

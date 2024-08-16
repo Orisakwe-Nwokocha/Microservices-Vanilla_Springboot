@@ -12,8 +12,10 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/users")
 public class AuthController {
+
+    private static final String BASE_URL = "/api/v1/auth";
 
     private final AuthService authService;
 
@@ -22,12 +24,12 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
+    @PostMapping(BASE_URL + "/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.status(CREATED).body(authService.register(request));
     }
 
-    @PostMapping("/logout")
+    @PostMapping(BASE_URL + "/logout")
     public ResponseEntity<Void> logout(@RequestHeader(AUTHORIZATION) String token) {
         token = token.replace(JWT_PREFIX, "").strip();
         authService.blacklist(token);

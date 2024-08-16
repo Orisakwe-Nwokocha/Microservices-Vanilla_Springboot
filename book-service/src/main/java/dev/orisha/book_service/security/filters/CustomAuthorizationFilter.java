@@ -49,9 +49,11 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith(JWT_PREFIX)) {
+            log.info("Authorization header found: {}", authorizationHeader);
             String token = authorizationHeader.substring(JWT_PREFIX.length()).strip();
             if (!isAuthorized(token, response)) return;
         }
+//        log.warn("Did not find authorization header in request: {}", requestPath);
         filterChain.doFilter(request, response);
     }
 

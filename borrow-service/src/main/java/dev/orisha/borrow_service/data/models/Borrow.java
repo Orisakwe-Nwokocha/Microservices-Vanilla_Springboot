@@ -12,7 +12,7 @@ import static java.lang.Boolean.FALSE;
 import static java.time.LocalDateTime.now;
 
 @Entity
-@Table(name = "book_loans")
+@Table(name = "book_records")
 @Getter
 @Setter
 public class Borrow {

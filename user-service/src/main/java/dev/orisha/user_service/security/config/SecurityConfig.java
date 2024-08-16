@@ -35,7 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         var authenticationFilter =
                 new CustomUsernamePasswordAuthenticationFilter(authenticationManager, appConfig);
-        authenticationFilter.setFilterProcessesUrl("/api/v1/auth/login");
+        authenticationFilter.setFilterProcessesUrl("/users/api/v1/auth/login");
 
 
         return http
