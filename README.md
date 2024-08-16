@@ -2,8 +2,8 @@
 ## Overview
 
 This documentation provides an overview of a microservices architecture designed for a book management and borrowing 
-system. The application consists of five main services: eureka-server, gateway-reactive, user-service, book-service, 
-and borrow-service. Each service plays a crucial role in the system's functionality, and their interactions are 
+system. The application consists of five main components: eureka-server, gateway-reactive, user-service, book-service, 
+and borrow-service. Each component plays a crucial role in the system's functionality, and their interactions are 
 facilitated through service discovery and API routing.
 
 ### Services
