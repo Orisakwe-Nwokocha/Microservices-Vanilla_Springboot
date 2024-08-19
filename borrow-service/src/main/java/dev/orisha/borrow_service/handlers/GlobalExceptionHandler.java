@@ -69,11 +69,12 @@ public class GlobalExceptionHandler {
 
     private String extractErrorMessage(FeignException exception) {
         String content = exception.contentUTF8();
+        log.info("Error message: {}", content);
         try {
             JsonNode jsonNode = new ObjectMapper().readTree(content);
             return jsonNode.get("message").asText();
-        } catch (JsonProcessingException e) {
-            throw new ResourceNotFoundException("Error message not found");
+        } catch (JsonProcessingException | NullPointerException e) {
+            return "Invalid or bad user request";
         }
     }
 
