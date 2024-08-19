@@ -1,10 +1,7 @@
 package dev.orisha.borrow_service.services.utils;
 
-import dev.orisha.borrow_service.data.models.Borrow;
 import dev.orisha.borrow_service.dto.BookDto;
 import dev.orisha.borrow_service.dto.responses.ApiResponse;
-import dev.orisha.borrow_service.dto.responses.BorrowBookResponse;
-import org.modelmapper.ModelMapper;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
@@ -22,11 +19,11 @@ public class BorrowServiceUtils {
 
     private BorrowServiceUtils() {}
 
-    private static final String BOOK_APP_URL = "/books/";
+    private static final String BOOK_APP_BASE_PATH = "/books/";
 
-    public static ResponseEntity<ApiResponse<BookDto>> fetchBookFromGateway(DiscoveryClient discoveryClient,
-                                                                      RestTemplate restTemplate,
-                                                                      String token, Long bookId) {
+    public static ResponseEntity<ApiResponse<BookDto>> fetchBookFromBookService(DiscoveryClient discoveryClient,
+                                                                                RestTemplate restTemplate,
+                                                                                String token, Long bookId) {
         String url = getRouteForBookService(discoveryClient, bookId);
         HttpEntity<String> entity = getHttpEntity(token);
         ParameterizedTypeReference<ApiResponse<BookDto>> responseType = new ParameterizedTypeReference<>() {};
@@ -34,10 +31,10 @@ public class BorrowServiceUtils {
     }
 
     private static String getRouteForBookService(DiscoveryClient discoveryClient, Long bookId) {
-        List<ServiceInstance> instances = discoveryClient.getInstances("gateway-reactive");
-        if (instances.isEmpty()) throw new IllegalStateException("No instances of gateway found");
+        List<ServiceInstance> instances = discoveryClient.getInstances("book-service");
+        if (instances.isEmpty()) throw new IllegalStateException("No instances of book service found");
         String baseUrl = instances.getFirst().getUri().toString();
-        return baseUrl + BOOK_APP_URL + bookId;
+        return baseUrl + BOOK_APP_BASE_PATH + bookId;
     }
 
     private static HttpEntity<String> getHttpEntity(String token) {
