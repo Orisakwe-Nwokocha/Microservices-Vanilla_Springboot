@@ -37,7 +37,7 @@ class AuthControllerTest {
     void registerUserTest() throws Exception {
         RegisterRequest request = buildRegisterRequest();
         byte[] content = new ObjectMapper().writeValueAsBytes(request);
-        mockMvc.perform(post("/api/v1/auth/register")
+        mockMvc.perform(post("/users/api/v1/auth/register")
                         .contentType(APPLICATION_JSON)
                         .content(content))
                 .andExpect(status().isCreated())
@@ -51,7 +51,7 @@ class AuthControllerTest {
         request.setEmail("user");
         request.setPassword("password");
         byte[] content = new ObjectMapper().writeValueAsBytes(request);
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/users/api/v1/auth/login")
                         .contentType(APPLICATION_JSON)
                         .content(content))
                 .andExpect(status().isOk())
@@ -64,7 +64,7 @@ class AuthControllerTest {
         request.setEmail("user");
         request.setPassword("wrongPassword");
         byte[] content = new ObjectMapper().writeValueAsBytes(request);
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/users/api/v1/auth/login")
                         .contentType(APPLICATION_JSON)
                         .content(content))
                 .andExpect(status().isUnauthorized())
@@ -74,7 +74,7 @@ class AuthControllerTest {
     @Test
     public void logoutUserTest() throws Exception {
         String token = getToken();
-        mockMvc.perform(post("/api/v1/auth/logout")
+        mockMvc.perform(post("/users/api/v1/auth/logout")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent())
                 .andDo(print());
@@ -82,7 +82,7 @@ class AuthControllerTest {
 
     @Test
     public void testThatBlacklistedTokenCannotBeAuthorized() throws Exception {
-        mockMvc.perform(get("/api/v1/user")
+        mockMvc.perform(get("/users/api/v1/user")
                         .header("Authorization", "Bearer " + BLACKLISTED_TOKEN))
                 .andExpect(status().isUnauthorized())
                 .andDo(print());
@@ -94,7 +94,7 @@ class AuthControllerTest {
         request.setPassword("password");
         ObjectMapper objectMapper = new ObjectMapper();
         byte[] content = objectMapper.writeValueAsBytes(request);
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
+        MvcResult result = mockMvc.perform(post("/users/api/v1/auth/login")
                         .contentType(APPLICATION_JSON)
                         .content(content))
                 .andExpect(status().isOk())
