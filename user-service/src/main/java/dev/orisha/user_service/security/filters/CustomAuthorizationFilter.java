@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -35,6 +37,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private final AuthService authService;
     private final AppConfig appConfig;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -89,7 +92,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         String principal = decodedJWT.getClaim("principal").asString();
         String credentials = decodedJWT.getClaim("credentials").asString();
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(principal);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, credentials, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("User authorization succeeded");
         return true;

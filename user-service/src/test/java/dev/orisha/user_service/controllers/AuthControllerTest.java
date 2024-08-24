@@ -19,6 +19,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -72,6 +73,16 @@ class AuthControllerTest {
     }
 
     @Test
+    public void testUserControllerForAuthenticatedUsers() throws Exception {
+        String token = getToken();
+        mockMvc.perform(get("/users")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Hello admin"))
+                .andDo(print());
+    }
+
+    @Test
     public void logoutUserTest() throws Exception {
         String token = getToken();
         mockMvc.perform(post("/users/api/v1/auth/logout")
@@ -82,7 +93,7 @@ class AuthControllerTest {
 
     @Test
     public void testThatBlacklistedTokenCannotBeAuthorized() throws Exception {
-        mockMvc.perform(get("/users/api/v1/user")
+        mockMvc.perform(get("/users")
                         .header("Authorization", "Bearer " + BLACKLISTED_TOKEN))
                 .andExpect(status().isUnauthorized())
                 .andDo(print());
