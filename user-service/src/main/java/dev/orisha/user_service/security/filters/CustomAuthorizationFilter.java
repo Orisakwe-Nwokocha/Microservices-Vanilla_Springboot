@@ -54,10 +54,12 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith(JWT_PREFIX)) {
+            log.info("Authorization header found");
             String token = authorizationHeader.substring(JWT_PREFIX.length()).strip();
             if (isTokenBlacklisted(response, token)) return;
             if (!isAuthorized(token, response)) return;
         }
+        else log.info("Authorization header not found");
         filterChain.doFilter(request, response);
     }
 
@@ -92,7 +94,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         log.info("JWT token verified for: {}", principal);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(principal);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("User authorization succeeded");
         return true;

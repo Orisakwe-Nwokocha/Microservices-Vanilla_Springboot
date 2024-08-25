@@ -37,15 +37,15 @@ public class SecurityConfig {
                 new CustomUsernamePasswordAuthenticationFilter(authenticationManager, appConfig);
         authenticationFilter.setFilterProcessesUrl("/users/api/v1/auth/login");
 
-
+        String[] publicEndpoints = PUBLIC_ENDPOINTS.toArray(new String[0]);
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authorizationFilter, CustomUsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_ENDPOINTS.toArray(new String[0])).permitAll()
-                        .anyRequest().authenticated()
+                                                .requestMatchers(publicEndpoints).permitAll()
+                                                .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .build();
