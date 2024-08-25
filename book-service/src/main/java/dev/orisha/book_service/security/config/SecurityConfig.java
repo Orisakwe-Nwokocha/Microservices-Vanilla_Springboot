@@ -34,14 +34,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         var authenticationFilter = new CustomUsernamePasswordAuthenticationFilter();
+
+        String[] publicEndpoints = PUBLIC_ENDPOINTS.toArray(new String[0]);
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authorizationFilter, CustomUsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_ENDPOINTS.toArray(new String[0])).permitAll()
-                        .anyRequest().authenticated()
+                                                .requestMatchers(publicEndpoints).permitAll()
+                                                .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .build();
