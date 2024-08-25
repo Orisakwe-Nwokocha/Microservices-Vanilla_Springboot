@@ -22,32 +22,32 @@ public class BookController {
 
     @PostMapping
     public ResponseEntity<?> addBook(@RequestBody BookDto bookDto) {
-        log.debug("REST request to save Book : {}", bookDto);
+        log.info("REST request to save Book : {}", bookDto);
         return ResponseEntity.status(CREATED).body(bookService.addBook(bookDto));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateBook(@RequestBody BookDto bookDto, @PathVariable Long id) {
-        log.debug("REST request to update Book : {}", id);
+        log.info("REST request to update Book : {}", id);
         bookDto.setId(id);
         return ResponseEntity.ok(bookService.updateBook(bookDto));
     }
 
     @GetMapping
     public ResponseEntity<?> getAllBooks() {
-        log.debug("REST request to get all Books");
+        log.info("REST request to get all Books");
         return ResponseEntity.ok(bookService.getAllBooks());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getBook(@PathVariable Long id) {
-        log.debug("REST request to get Book : {}", id);
+        log.info("REST request to get Book : {}", id);
         return ResponseEntity.ok(bookService.getBookBy(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBook(@PathVariable Long id) {
-        log.debug("REST request to delete Book : {}", id);
+        log.info("REST request to delete Book : {}", id);
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }
