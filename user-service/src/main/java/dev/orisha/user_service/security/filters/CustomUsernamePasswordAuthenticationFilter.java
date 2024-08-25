@@ -128,14 +128,12 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
     private String generateAccessToken(Authentication authResult) {
         Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
         Instant now = Instant.now();
-        UserDetails principal = (UserDetails) authResult.getPrincipal();
+        UserDetails user = (UserDetails) authResult.getPrincipal();
         return JWT.create()
                 .withIssuer("orisha.dev")
                 .withIssuedAt(now)
                 .withExpiresAt(now.plus(24, HOURS))
-                .withSubject(principal.getUsername())
-                .withClaim("principal", principal.getUsername())
-                .withClaim("credentials", authResult.getCredentials().toString())
+                .withSubject(user.getUsername())
                 .withArrayClaim("authorities", extractAuthorities(authResult.getAuthorities()))
                 .sign(algorithm);
     }

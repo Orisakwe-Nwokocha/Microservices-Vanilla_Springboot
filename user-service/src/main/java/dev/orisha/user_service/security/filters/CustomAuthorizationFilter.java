@@ -71,14 +71,13 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private boolean isAuthorized(String token, HttpServletResponse response) throws IOException {
+        log.info("Verifying JWT token");
         Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
         DecodedJWT decodedJWT;
         try {
             JWTVerifier jwtVerifier = JWT.require(algorithm)
                     .withIssuer("orisha.dev")
                     .withClaimPresence("authorities")
-                    .withClaimPresence("principal")
-                    .withClaimPresence("credentials")
                     .build();
             decodedJWT = jwtVerifier.verify(token);
         } catch (JWTVerificationException exception) {
@@ -86,14 +85,14 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             sendErrorResponse(response);
             return false;
         }
+        String principal = decodedJWT.getSubject();
+        List<? extends GrantedAuthority> authorities =
+                decodedJWT.getClaim("authorities").asList(SimpleGrantedAuthority.class);
 
-        List<? extends GrantedAuthority> authorities = decodedJWT.getClaim("authorities")
-                .asList(SimpleGrantedAuthority.class);
-        String principal = decodedJWT.getClaim("principal").asString();
-        String credentials = decodedJWT.getClaim("credentials").asString();
+        log.info("JWT token verified for: {}", principal);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(principal);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, credentials, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("User authorization succeeded");
         return true;

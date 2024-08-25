@@ -30,6 +30,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final BlacklistedTokenRepository blacklistedTokenRepository;
 
+
     @Override
     public ApiResponse<RegisterResponse> register(RegisterRequest request) {
         log.info("Registering new user");
@@ -41,9 +42,9 @@ public class AuthServiceImpl implements AuthService {
         return new ApiResponse<>(LocalDateTime.now(), true, response);
     }
 
-
     @Override
     public void blacklist(String token) {
+        token = mutateToken(token);
         log.info("Trying to blacklist token: {}", token);
         trackExpiredTokens();
         BlacklistedToken blacklistedToken = new BlacklistedToken();
@@ -55,11 +56,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean isTokenBlacklisted(String token) {
+        token = mutateToken(token);
         log.info("Checking blacklist status of token: {}", token);
         boolean isBlacklisted = blacklistedTokenRepository.existsByToken(token);
         log.info("Blacklist status of token: {}", isBlacklisted);
         trackExpiredTokens();
         return isBlacklisted;
+    }
+
+    private static String mutateToken(String token) {
+        int beginIndex = token.indexOf(".") + 1;
+        int endIndex = token.lastIndexOf(".");
+        return token.substring(beginIndex, endIndex);
     }
 
     private void trackExpiredTokens() {

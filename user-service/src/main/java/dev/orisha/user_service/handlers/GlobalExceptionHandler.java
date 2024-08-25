@@ -19,35 +19,35 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<?> handleNullPointerException(NullPointerException exception, HttpServletRequest request) {
-        logExceptionMessage(exception.getMessage());
+        log(exception.getMessage());
         ErrorResponse response = buildErrorResponse("IllegalState", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<?> handleIllegalStateException(IllegalStateException exception, HttpServletRequest request) {
-        logExceptionMessage(exception.getMessage());
+        log(exception.getMessage());
         ErrorResponse response = buildErrorResponse("IllegalState", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(EmailExistsException.class)
     public ResponseEntity<?> handleEmailExistsException(EmailExistsException exception, HttpServletRequest request) {
-        logExceptionMessage(exception.getMessage());
+        log(exception.getMessage());
         ErrorResponse response = buildErrorResponse("EmailExists", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException exception, HttpServletRequest request) {
-        logExceptionMessage(exception.getMessage());
+        log(exception.getMessage());
         ErrorResponse response = buildErrorResponse("UserNotFound", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request) {
-        logExceptionMessage(exception.getMessage());
+        log(exception.getMessage());
         ErrorResponse response = buildErrorResponse("ResourceNotFound", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
@@ -55,8 +55,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception,
                                                                    HttpServletRequest request) {
-        logExceptionMessage(exception.getMessage());
-        ErrorResponse response = buildErrorResponse("BadRequest", exception.getMessage(), request);
+        log(exception.getMessage());
+        ErrorResponse response = buildErrorResponse("BadRequest", "Invalid input", request);
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
-    private static void logExceptionMessage(String exceptionMessage) {
+    private static void log(String exceptionMessage) {
         log.error("ERROR: {}", exceptionMessage);
     }
 

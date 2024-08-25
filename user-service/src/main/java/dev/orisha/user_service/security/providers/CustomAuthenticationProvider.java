@@ -28,7 +28,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             log.error("Invalid credentials for user: {}", username);
             throw new BadCredentialsException("Invalid email or password");
         }
-        return new UsernamePasswordAuthenticationToken(userDetails, "[PROTECTED]", userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     @Override
