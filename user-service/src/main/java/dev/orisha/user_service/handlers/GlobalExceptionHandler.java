@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception,
                                                                    HttpServletRequest request) {
         log(exception.getMessage());
-        ErrorResponse response = buildErrorResponse("BadRequest", "Invalid input", request);
+        ErrorResponse response = buildErrorResponse("BadRequest", "Invalid or bad user request", request);
         return ResponseEntity.badRequest().body(response);
     }
 
