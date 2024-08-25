@@ -9,7 +9,6 @@ public class SecurityUtils {
     public static final String JWT_PREFIX = "Bearer ";
 
     public static final List<String> PUBLIC_ENDPOINTS = List.of(
-                "/api/v1/"
     );
 
     public static final String[] ADMIN_AUTH_ENDPOINTS = {

@@ -34,6 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private final AppConfig appConfig;
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
                                                             throws ServletException, IOException {
@@ -49,21 +50,23 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith(JWT_PREFIX)) {
+            log.info("Authorization header found");
             String token = authorizationHeader.substring(JWT_PREFIX.length()).strip();
             if (!isAuthorized(token, response)) return;
         }
+        else log.error("Authorization header not found");
+
         filterChain.doFilter(request, response);
     }
 
     private boolean isAuthorized(String token, HttpServletResponse response) throws IOException {
+        log.info("Verifying JWT token");
         Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
         DecodedJWT decodedJWT;
         try {
             JWTVerifier jwtVerifier = JWT.require(algorithm)
                     .withIssuer("orisha.dev")
                     .withClaimPresence("authorities")
-                    .withClaimPresence("principal")
-                    .withClaimPresence("credentials")
                     .build();
             decodedJWT = jwtVerifier.verify(token);
         } catch (JWTVerificationException exception) {
@@ -71,13 +74,14 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             sendErrorResponse(response);
             return false;
         }
+        String principal = decodedJWT.getSubject();
+        List<? extends GrantedAuthority> authorities =
+                decodedJWT.getClaim("authorities").asList(SimpleGrantedAuthority.class);
 
-        List<? extends GrantedAuthority> authorities = decodedJWT.getClaim("authorities")
-                .asList(SimpleGrantedAuthority.class);
-        String principal = decodedJWT.getClaim("principal").asString();
-        String credentials = decodedJWT.getClaim("credentials").asString();
+        log.info("JWT token verified for: {}", principal);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(principal, token, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("User authorization succeeded");
         return true;
