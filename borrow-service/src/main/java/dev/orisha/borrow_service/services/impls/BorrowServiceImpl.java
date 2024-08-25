@@ -39,7 +39,7 @@ public class BorrowServiceImpl implements BorrowService {
     public ApiResponse<BorrowBookResponse> borrowBook(Long bookId, String token, String email) {
         log.info("Borrow book request by user: {}", email);
 //        BookDto bookDto = getBookFromBookService(token, bookId);
-        BookDto bookDto = fetchBookWithFeignClient(token, bookId);
+        BookDto bookDto = fetchBookWithFeignClient(bookId);
         Borrow borrow = saveBorrowEntity(bookId, email);
         BorrowBookResponse response = buildResponse(borrow, bookDto);
         log.info("Book borrowed successfully : {}", response);
@@ -85,9 +85,9 @@ public class BorrowServiceImpl implements BorrowService {
         return borrowRepository.save(borrow);
     }
 
-    private BookDto fetchBookWithFeignClient(String token, Long bookId) {
+    private BookDto fetchBookWithFeignClient(Long bookId) {
         log.info("Fetching book from book-service with id : {}", bookId);
-        ApiResponse<BookDto> response = bookServiceClient.getBookById(token, bookId);
+        ApiResponse<BookDto> response = bookServiceClient.getBookById(bookId);
         log.info("Book fetched successfully via feign client : {}", response);
         return response.getData();
     }
