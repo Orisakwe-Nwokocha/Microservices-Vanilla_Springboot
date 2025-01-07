@@ -1,7 +1,7 @@
 package dev.orisha.user_service.security.providers;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,11 +13,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 @Slf4j
 public class CustomAuthenticationProvider implements AuthenticationProvider {
+
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public CustomAuthenticationProvider(final UserDetailsService userDetailsService,
+                                        final PasswordEncoder passwordEncoder) {
+        this.userDetailsService = userDetailsService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -33,6 +40,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authType) {
+        if (authType == null) return false;
         return authType.equals(UsernamePasswordAuthenticationToken.class);
     }
 }

@@ -13,8 +13,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,8 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,13 +35,23 @@ import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@AllArgsConstructor
+@Component
 @Slf4j
-public class CustomUsernamePasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final AuthenticationManager authenticationManager;
     private final AppConfig appConfig;
+
+    @Autowired
+    public CustomAuthenticationFilter(final ObjectMapper mapper,
+                                      final AuthenticationManager authenticationManager,
+                                      final AppConfig appConfig) {
+        this.mapper = mapper;
+        this.authenticationManager = authenticationManager;
+        this.appConfig = appConfig;
+        super.setAuthenticationManager(authenticationManager);
+    }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -78,8 +88,7 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
         response.getOutputStream().write(mapper.writeValueAsBytes(apiResponse));
         response.flushBuffer();
 
-        log.info("User authentication successful");
-        chain.doFilter(request, response);
+        log.info("User '{}' authentication successful", authResult.getName());
     }
 
 
@@ -101,10 +110,29 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
         log.info("User authentication unsuccessful");
     }
 
+    private String generateAccessToken(Authentication authResult) {
+        Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
+        Instant now = Instant.now();
+        return JWT.create()
+                .withIssuer("orisha.dev")
+                .withIssuedAt(now)
+                .withExpiresAt(now.plus(24, HOURS))
+                .withSubject(authResult.getName())
+                .withArrayClaim("authorities", extractAuthorities(authResult.getAuthorities()))
+                .sign(algorithm);
+    }
+
+    private String[] extractAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        return authorities
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toArray(String[]::new);
+    }
+
     private static LoginResponse buildLoginResponse(String token) {
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
-        loginResponse.setMessage("Authentication succeeded");
+        loginResponse.setMessage("Login successful");
         return loginResponse;
     }
 
@@ -116,25 +144,5 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
         cookie.setSecure(true);
 //        cookie.setDomain("http://localhost:3000");
         return cookie;
-    }
-
-    private String[] extractAuthorities(Collection<? extends GrantedAuthority> authorities) {
-        return authorities
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toArray(String[]::new);
-    }
-
-    private String generateAccessToken(Authentication authResult) {
-        Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
-        Instant now = Instant.now();
-        UserDetails user = (UserDetails) authResult.getPrincipal();
-        return JWT.create()
-                .withIssuer("orisha.dev")
-                .withIssuedAt(now)
-                .withExpiresAt(now.plus(24, HOURS))
-                .withSubject(user.getUsername())
-                .withArrayClaim("authorities", extractAuthorities(authResult.getAuthorities()))
-                .sign(algorithm);
     }
 }

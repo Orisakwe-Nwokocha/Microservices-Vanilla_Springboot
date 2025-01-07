@@ -11,15 +11,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -32,18 +30,25 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
-@AllArgsConstructor
 @Slf4j
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
+
     private final AuthService authService;
     private final AppConfig appConfig;
-    private final UserDetailsService userDetailsService;
+//    private final UserDetailsService userDetailsService;
+
+    @Autowired
+    public CustomAuthorizationFilter(final AuthService authService, final AppConfig appConfig) {
+        this.authService = authService;
+        this.appConfig = appConfig;
+    }
+
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-                                                            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         log.info("Starting authorization");
-
         String requestPath = request.getRequestURI();
         boolean isRequestPathPublic = PUBLIC_ENDPOINTS.contains(requestPath);
         if (isRequestPathPublic) {
@@ -51,16 +56,23 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith(JWT_PREFIX)) {
-            log.info("Authorization header found");
             String token = authorizationHeader.substring(JWT_PREFIX.length()).strip();
-            if (isTokenBlacklisted(response, token)) return;
-            if (!isAuthorized(token, response)) return;
+            if (isTokenInvalid(response, token)) {
+                return;
+            }
+        } else {
+            log.info("Authorization header not found");
         }
-        else log.info("Authorization header not found");
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isTokenInvalid(HttpServletResponse response, String token) throws IOException {
+        if (isTokenBlacklisted(response, token)) {
+            return true;
+        }
+        return isUnAuthorized(token, response);
     }
 
     private boolean isTokenBlacklisted(HttpServletResponse response, String token) throws IOException {
@@ -72,33 +84,34 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         return false;
     }
 
-    private boolean isAuthorized(String token, HttpServletResponse response) throws IOException {
+    private boolean isUnAuthorized(String token, HttpServletResponse response) throws IOException {
         log.info("Verifying JWT token");
         Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
         DecodedJWT decodedJWT;
         try {
             JWTVerifier jwtVerifier = JWT.require(algorithm)
                     .withIssuer("orisha.dev")
-                    .withClaimPresence("authorities")
+                    .withClaimPresence("roles")
+                    .withClaimPresence("principal")
+                    .withClaimPresence("credentials")
                     .build();
+
             decodedJWT = jwtVerifier.verify(token);
         } catch (JWTVerificationException exception) {
             log.error("JWT verification failed: {}", exception.getMessage());
             sendErrorResponse(response);
-            return false;
+            return true;
         }
-        String principal = decodedJWT.getSubject();
-        List<? extends GrantedAuthority> authorities =
-                decodedJWT.getClaim("authorities").asList(SimpleGrantedAuthority.class);
+        List<? extends GrantedAuthority> authorities = decodedJWT.getClaim("roles").asList(SimpleGrantedAuthority.class);
+        String principal = decodedJWT.getClaim("principal").asString();
+        String credentials = decodedJWT.getClaim("credentials").asString();
 
         log.info("JWT token verified for: {}", principal);
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(principal);
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.info("User authorization succeeded");
-        return true;
+
+        log.info("User '{}' authorization succeeded", principal);
+        return false;
     }
 
     private void sendErrorResponse(HttpServletResponse response) throws IOException {
@@ -107,4 +120,38 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         response.getWriter().write("{\"error\": \"" + "Token is expired or invalid" + "\"}");
         response.getWriter().flush();
     }
+
+//    private boolean isUnAuthorized(String token, HttpServletResponse response) throws IOException {
+//        Algorithm algorithm = Algorithm.RSA512(rsaKeys.publicKey(), rsaKeys.privateKey());
+//        DecodedJWT decodedJWT;
+//        try {
+//            JWTVerifier jwtVerifier = JWT.require(algorithm)
+//                    .withIssuer("orisha.dev")
+//                    .withClaimPresence("roles")
+//                    .withClaimPresence("principal")
+//                    .withClaimPresence("credentials")
+//                    .build();
+//
+//            decodedJWT = jwtVerifier.verify(token);
+//        } catch (JWTVerificationException exception) {
+//            log.error("JWT verification failed: {}", exception.getMessage());
+//            sendErrorResponse(response);
+//            return true;
+//        }
+//
+//        List<? extends GrantedAuthority> authorities = decodedJWT.getClaim("roles")
+//                .asList(SimpleGrantedAuthority.class);
+//        String principal = decodedJWT.getClaim("principal").asString();
+//        String credentials = decodedJWT.getClaim("credentials").asString();
+//
+////        UserDetails userDetails = userDetailsService.loadUserByUsername(principal);
+////        Authentication authentication =
+////                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+//
+//        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
+//        log.info("User '{}' authorization succeeded", principal);
+//        return false;
+//    }
+
 }

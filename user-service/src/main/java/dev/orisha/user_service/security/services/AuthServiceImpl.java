@@ -8,9 +8,10 @@ import dev.orisha.user_service.dto.responses.RegisterResponse;
 import dev.orisha.user_service.exceptions.EmailExistsException;
 import dev.orisha.user_service.security.data.models.BlacklistedToken;
 import dev.orisha.user_service.security.data.repositories.BlacklistedTokenRepository;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,6 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.HOURS;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
@@ -29,6 +29,17 @@ public class AuthServiceImpl implements AuthService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final BlacklistedTokenRepository blacklistedTokenRepository;
+
+    @Autowired
+    public AuthServiceImpl(final UserRepository userRepository,
+                           final ModelMapper modelMapper,
+                           final PasswordEncoder passwordEncoder,
+                           final BlacklistedTokenRepository blacklistedTokenRepository) {
+        this.userRepository = userRepository;
+        this.modelMapper = modelMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.blacklistedTokenRepository = blacklistedTokenRepository;
+    }
 
 
     @Override
@@ -46,7 +57,6 @@ public class AuthServiceImpl implements AuthService {
     public void blacklist(String token) {
         token = mutateToken(token);
         log.info("Trying to blacklist token: {}", token);
-        trackExpiredTokens();
         BlacklistedToken blacklistedToken = new BlacklistedToken();
         blacklistedToken.setToken(token);
         blacklistedToken.setExpiresAt(now().plus(24, HOURS));
@@ -60,23 +70,23 @@ public class AuthServiceImpl implements AuthService {
         log.info("Checking blacklist status of token: {}", token);
         boolean isBlacklisted = blacklistedTokenRepository.existsByToken(token);
         log.info("Blacklist status of token: {}", isBlacklisted);
-        trackExpiredTokens();
         return isBlacklisted;
     }
 
-    private static String mutateToken(String token) {
-        int beginIndex = token.indexOf(".") + 1;
-        int endIndex = token.lastIndexOf(".");
-        return token.substring(beginIndex, endIndex);
-    }
-
-    private void trackExpiredTokens() {
+    @Scheduled(cron = "1 0 * * *")
+    private void deleteExpiredTokens() {
         log.info("Tracking and deleting expired user tokens");
         var blacklist = blacklistedTokenRepository.findAll();
         blacklist.stream()
                 .filter(blacklistedToken -> now().isAfter(blacklistedToken.getExpiresAt()))
                 .forEach(blacklistedTokenRepository::delete);
         log.info("Expired user tokens successfully tracked and deleted");
+    }
+
+    private static String mutateToken(String token) {
+        int beginIndex = token.indexOf(".") + 1;
+        int endIndex = token.lastIndexOf(".");
+        return token.substring(beginIndex, endIndex);
     }
 
     private User createAndSaveUser(RegisterRequest request) {

@@ -1,12 +1,10 @@
 package dev.orisha.user_service.security.config;
 
-import dev.orisha.user_service.config.AppConfig;
 import dev.orisha.user_service.security.filters.CustomAuthorizationFilter;
-import dev.orisha.user_service.security.filters.CustomUsernamePasswordAuthenticationFilter;
-import lombok.AllArgsConstructor;
+import dev.orisha.user_service.security.filters.CustomAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,17 +22,20 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 @Configuration
 @EnableWebSecurity
-@AllArgsConstructor
 public class SecurityConfig {
 
-    private final AuthenticationManager authenticationManager;
     private final CustomAuthorizationFilter authorizationFilter;
-    private final AppConfig appConfig;
+    private final CustomAuthenticationFilter authenticationFilter;
+
+    @Autowired
+    public SecurityConfig(final CustomAuthorizationFilter authorizationFilter,
+                          final CustomAuthenticationFilter authenticationFilter) {
+        this.authorizationFilter = authorizationFilter;
+        this.authenticationFilter = authenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        var authenticationFilter =
-                new CustomUsernamePasswordAuthenticationFilter(authenticationManager, appConfig);
         authenticationFilter.setFilterProcessesUrl("/users/api/v1/auth/login");
 
         String[] publicEndpoints = PUBLIC_ENDPOINTS.toArray(new String[0]);
@@ -42,7 +43,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(authorizationFilter, CustomUsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authorizationFilter, CustomAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(publicEndpoints).permitAll()
                                                 .anyRequest().authenticated()

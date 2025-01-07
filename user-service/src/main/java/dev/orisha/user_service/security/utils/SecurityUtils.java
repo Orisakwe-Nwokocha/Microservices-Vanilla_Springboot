@@ -13,12 +13,12 @@ public class SecurityUtils {
                 "/users/api/v1/auth/login"
     );
 
-    public static final String[] ADMIN_AUTH_ENDPOINTS = {
-
-    };
-
-    public static final String[] USER_AUTH_ENDPOINTS = {
-
-    };
+//    public static final String[] ADMIN_AUTH_ENDPOINTS = {
+//
+//    };
+//
+//    public static final String[] USER_AUTH_ENDPOINTS = {
+//
+//    };
 
 }

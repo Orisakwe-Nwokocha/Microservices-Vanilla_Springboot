@@ -13,7 +13,7 @@ public class CustomAuthenticationManager implements AuthenticationManager {
    private final AuthenticationProvider authenticationProvider;
 
    @Autowired
-    public CustomAuthenticationManager(AuthenticationProvider authenticationProvider) {
+    public CustomAuthenticationManager(final AuthenticationProvider authenticationProvider) {
         this.authenticationProvider = authenticationProvider;
     }
 

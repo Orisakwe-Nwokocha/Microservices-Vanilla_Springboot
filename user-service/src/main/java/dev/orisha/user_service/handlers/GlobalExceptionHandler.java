@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -57,6 +58,13 @@ public class GlobalExceptionHandler {
                                                                    HttpServletRequest request) {
         log(exception.getMessage());
         ErrorResponse response = buildErrorResponse("BadRequest", "Invalid or bad user request", request);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<?> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
+        log(exception.getMessage());
+        ErrorResponse response = buildErrorResponse("Wrong method", exception.getMessage(), request);
         return ResponseEntity.badRequest().body(response);
     }
 
