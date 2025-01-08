@@ -4,6 +4,7 @@ import dev.orisha.user_service.data.models.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 
@@ -17,10 +18,11 @@ public class SecureUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getAuthorities()
-                .stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
-                .toList();
+        return null;
+//        return user.getAuthorities()
+//                .stream()
+//                .map(role -> new SimpleGrantedAuthority(role.name()))
+//                .toList();
     }
 
     @Override

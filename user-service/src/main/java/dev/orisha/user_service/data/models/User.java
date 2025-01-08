@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -17,6 +18,7 @@ import static java.time.LocalDateTime.now;
 @Setter
 @Entity
 @Table(name = "users")
+@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +34,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection(fetch=EAGER)
+    @ElementCollection
     @Enumerated(STRING)
     private Set<Authority> authorities;
 
