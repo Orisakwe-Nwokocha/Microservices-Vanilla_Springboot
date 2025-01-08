@@ -13,6 +13,6 @@ public class UserController {
     @GetMapping
     public String home(Principal principal) {
 
-        return "Hello " + principal.getName();
+        return "Hello " + (principal != null ? principal.getName() : "Nobody");
     }
 }

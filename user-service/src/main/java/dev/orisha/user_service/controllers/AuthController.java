@@ -2,6 +2,7 @@ package dev.orisha.user_service.controllers;
 
 import dev.orisha.user_service.dto.requests.RegisterRequest;
 import dev.orisha.user_service.security.services.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping(BASE_URL + "/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(CREATED).body(authService.register(request));
     }
 

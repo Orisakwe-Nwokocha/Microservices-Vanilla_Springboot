@@ -1,5 +1,8 @@
 package dev.orisha.user_service.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Getter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +25,14 @@ public class AppConfig {
                 .setMatchingStrategy(STRICT)
                 .setPropertyCondition(isNotNull());
         return modelMapper;
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.setDateFormat(new StdDateFormat());
+        return objectMapper;
     }
 
 }

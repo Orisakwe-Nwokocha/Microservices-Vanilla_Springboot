@@ -1,4 +1,4 @@
-package dev.orisha.user_service.dto.responses;
+package dev.orisha.user_service.dto.responses.errors;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class ErrorResponse {
+public class ApiErrorResponse {
     @JsonFormat(pattern = "dd-MMMM-yyyy 'at' hh:mm a")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime responseTime;

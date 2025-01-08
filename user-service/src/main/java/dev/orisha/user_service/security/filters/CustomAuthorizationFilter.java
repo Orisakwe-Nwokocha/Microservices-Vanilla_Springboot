@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,8 +47,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                   @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         log.info("Starting authorization");
         String requestPath = request.getRequestURI();
         boolean isRequestPathPublic = PUBLIC_ENDPOINTS.contains(requestPath);
@@ -64,6 +65,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             }
         } else {
             log.info("Authorization header not found");
+//            sendErrorResponse(response);
         }
         filterChain.doFilter(request, response);
     }
@@ -91,9 +93,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         try {
             JWTVerifier jwtVerifier = JWT.require(algorithm)
                     .withIssuer("orisha.dev")
-                    .withClaimPresence("roles")
                     .withClaimPresence("principal")
-                    .withClaimPresence("credentials")
+                    .withClaimPresence("authorities")
                     .build();
 
             decodedJWT = jwtVerifier.verify(token);
@@ -102,14 +103,12 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             sendErrorResponse(response);
             return true;
         }
-        List<? extends GrantedAuthority> authorities = decodedJWT.getClaim("roles").asList(SimpleGrantedAuthority.class);
+        List<? extends GrantedAuthority> authorities = decodedJWT.getClaim("authorities").asList(SimpleGrantedAuthority.class);
         String principal = decodedJWT.getClaim("principal").asString();
-        String credentials = decodedJWT.getClaim("credentials").asString();
 
         log.info("JWT token verified for: {}", principal);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         log.info("User '{}' authorization succeeded", principal);
         return false;
     }

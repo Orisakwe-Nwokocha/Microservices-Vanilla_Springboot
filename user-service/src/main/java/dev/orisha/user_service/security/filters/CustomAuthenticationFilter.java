@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.orisha.user_service.config.AppConfig;
 import dev.orisha.user_service.dto.requests.LoginRequest;
 import dev.orisha.user_service.dto.responses.ApiResponse;
-import dev.orisha.user_service.dto.responses.ErrorResponse;
+import dev.orisha.user_service.dto.responses.errors.ApiErrorResponse;
 import dev.orisha.user_service.dto.responses.LoginResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -95,7 +95,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException exception) throws IOException, ServletException {
-        ErrorResponse errorResponse = ErrorResponse.builder()
+        ApiErrorResponse errorResponse = ApiErrorResponse.builder()
                 .responseTime(now())
                 .isSuccessful(false)
                 .error("UnsuccessfulAuthentication")
@@ -106,19 +106,21 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         response.setStatus(SC_UNAUTHORIZED);
         response.setContentType(APPLICATION_JSON_VALUE);
         response.getOutputStream().write(mapper.writeValueAsBytes(errorResponse));
-        response.flushBuffer();
+        response.getOutputStream().flush();
         log.info("User authentication unsuccessful");
     }
 
     private String generateAccessToken(Authentication authResult) {
         Algorithm algorithm = Algorithm.HMAC512(appConfig.getSecretKey());
         Instant now = Instant.now();
+        String principal = authResult.getName();
         return JWT.create()
                 .withIssuer("orisha.dev")
                 .withIssuedAt(now)
                 .withExpiresAt(now.plus(24, HOURS))
-                .withSubject(authResult.getName())
+                .withSubject(principal)
                 .withArrayClaim("authorities", extractAuthorities(authResult.getAuthorities()))
+                .withClaim("principal", principal)
                 .sign(algorithm);
     }
 
