@@ -84,8 +84,12 @@ public class AuthServiceImpl implements AuthService {
     private User createAndSaveUser(RegisterRequest request) {
         User newUser = modelMapper.map(request, User.class);
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-//        newUser.setAuthorities(new HashSet<>());
         newUser.setAuthorities(Set.of(USER));
+
+        // different implementation
+/*        newUser.setEmail(newUser.getEmail().toLowerCase());
+        newUser.setAuthorities(new HashSet<>());*/
+
         return userRepository.save(newUser);
     }
 

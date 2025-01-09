@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.Collection;
 
+import static dev.orisha.user_service.handlers.constants.ErrorConstants.AUTHENTICATION_ERROR_MESSAGE;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -57,14 +58,20 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
                                                                 throws AuthenticationException {
         log.info("Starting user authentication");
-
         LoginRequest loginRequest;
         try(InputStream inputStream = request.getInputStream()) {
             loginRequest = mapper.readValue(inputStream, LoginRequest.class);
-        } catch (IOException e) {
-            throw new AuthenticationCredentialsNotFoundException(e.getMessage());
+            if (loginRequest == null || loginRequest.getEmail() == null || loginRequest.getPassword() == null) {
+                throw new AuthenticationCredentialsNotFoundException("Login details is null or empty: %s".formatted(loginRequest));
+            }
+        } catch (Exception e) {
+            log.error(AUTHENTICATION_ERROR_MESSAGE, e);
+            throw new AuthenticationCredentialsNotFoundException(AUTHENTICATION_ERROR_MESSAGE);
         }
-        String username = loginRequest.getEmail().toLowerCase();
+
+        /*   different implementation
+        username = loginRequest.getEmail().toLowerCase();*/
+        String username = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);
@@ -91,6 +98,10 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         response.getOutputStream().write(mapper.writeValueAsBytes(apiResponse));
         response.flushBuffer();
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("successful Authentication: {}", authentication);
+        log.info("Principal: {}", authentication.getPrincipal());
+
         log.info("User '{}' authentication successful", authResult.getName());
     }
 
@@ -110,6 +121,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         response.setContentType(APPLICATION_JSON_VALUE);
         response.getOutputStream().write(mapper.writeValueAsBytes(errorResponse));
         response.getOutputStream().flush();
+
         log.info("User authentication unsuccessful");
     }
 
@@ -131,8 +143,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         return authorities
                 .stream()
                 .map(GrantedAuthority::getAuthority)
-
-
                 .toArray(String[]::new);
     }
 

@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import static dev.orisha.user_service.handlers.constants.ErrorConstants.AUTHENTICATION_ERROR_MESSAGE;
+
 @Component
 @Slf4j
 public class CustomAuthenticationProvider implements AuthenticationProvider {
@@ -35,7 +37,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             log.error("Invalid credentials for user: {}", username);
-            throw new BadCredentialsException("Invalid email or password");
+            throw new BadCredentialsException(AUTHENTICATION_ERROR_MESSAGE);
         }
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
