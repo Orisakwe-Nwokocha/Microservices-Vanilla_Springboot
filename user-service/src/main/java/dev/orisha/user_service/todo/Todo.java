@@ -9,7 +9,11 @@ public class Todo {
      * TODO: configure object mapper for time serialization/deserialization: Done
      * TODO: I have forgotten the other configurations to do
      * TODO: log the error trace in the handlers and auth/authz filters
-     *
+     * TODO: move update and all other user-centric logic to user service
+     * TODO: return empty string from user dto for sensitve fields
+     * TODO: refactor update user logic and add request constraints
+     * TODO: error response (auth/authz/request validation aside) should follow
+     *       the same pattern as the api response
      *
      *
      */

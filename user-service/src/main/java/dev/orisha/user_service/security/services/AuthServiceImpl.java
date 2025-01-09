@@ -3,10 +3,13 @@ package dev.orisha.user_service.security.services;
 import dev.orisha.user_service.data.mappers.UserMapper;
 import dev.orisha.user_service.data.models.User;
 import dev.orisha.user_service.data.repositories.UserRepository;
+import dev.orisha.user_service.dto.UserDTO;
 import dev.orisha.user_service.dto.requests.RegisterRequest;
+import dev.orisha.user_service.dto.requests.UserUpdateRequest;
 import dev.orisha.user_service.dto.responses.ApiResponse;
 import dev.orisha.user_service.dto.responses.RegisterResponse;
 import dev.orisha.user_service.exceptions.EmailExistsException;
+import dev.orisha.user_service.exceptions.UserNotFoundException;
 import dev.orisha.user_service.security.data.models.BlacklistedToken;
 import dev.orisha.user_service.security.data.repositories.BlacklistedTokenRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.time.Instant.now;
@@ -49,9 +53,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponse<RegisterResponse> register(RegisterRequest request) {
-//        if (request != null) {
-//            throw new NullPointerException("Request cannot be null");
-//        }
         log.info("Registering new user");
         validateExistingEmail(request.getEmail());
         User newUser = createAndSaveUser(request);
@@ -83,10 +84,31 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public User update(RegisterRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).map().orElseThrow(null);
-        user.getAuthorities().add(request.getAuthority());
-        return userRepository.save(user);
+    public UserDTO update(UserUpdateRequest request) {
+        return getUserDTOEagerly(request.getEmail())
+                .map(existingUser -> {
+                    log.info("Updating existing user: {}", existingUser);
+                    existingUser.getAuthorities().add(request.getAuthority());
+                    userMapper.partialUpdate(existingUser, request);
+                    return existingUser;
+                })
+                .map(userRepository::save)
+                .map(userMapper::toDto)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserDTO getUserDTO(String email) {
+        log.info("Trying to find user by email: {}", email);
+
+       return userRepository.findByEmail(email).map(userMapper::toDto)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: '%s'".formatted(email)));
+    }
+
+    private Optional<User> getUserDTOEagerly(String email) {
+        log.info("Trying to find user eagerly by email: {}", email);
+        return userRepository.findByEmailWithEagerRelationships(email);
     }
 
     @Scheduled(cron = "1 0 * * *")
@@ -98,6 +120,7 @@ public class AuthServiceImpl implements AuthService {
                 .forEach(blacklistedTokenRepository::delete);
         log.info("Expired user tokens successfully tracked and deleted");
     }
+
 
     private static String mutateToken(String token) {
         int beginIndex = token.indexOf(".") + 1;
@@ -115,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
 
     private void validateExistingEmail(String email) {
         boolean emailExists = userRepository.existsByEmail(email);
-//        if (emailExists) throw new EmailExistsException(email + " already exists");
+        if (emailExists) throw new EmailExistsException(email + " already exists");
     }
 
 }

@@ -1,23 +1,20 @@
 package dev.orisha.user_service.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.orisha.user_service.data.models.User;
-import dev.orisha.user_service.data.repositories.UserRepository;
+import dev.orisha.user_service.dto.UserDTO;
 import dev.orisha.user_service.dto.requests.LoginRequest;
 import dev.orisha.user_service.dto.requests.RegisterRequest;
+import dev.orisha.user_service.dto.requests.UserUpdateRequest;
 import dev.orisha.user_service.dto.responses.ApiResponse;
 import dev.orisha.user_service.dto.responses.LoginResponse;
-import dev.orisha.user_service.dto.responses.RegisterResponse;
 import dev.orisha.user_service.security.services.AuthService;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static dev.orisha.user_service.data.constants.Authority.ADMIN;
 import static dev.orisha.user_service.data.constants.Authority.USER;
@@ -43,9 +40,6 @@ class AuthControllerTest {
     @Autowired
     private AuthService authService;
 
-    @Autowired
-    private UserRepository userRepository;
-
     private static final String BLACKLISTED_TOKEN = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcmlzaGEuZGV2IiwiaWF0IjoxNzIzMzk0Mjk5LCJleHAiOjE3MjM0ODA2OTksInN1YiI6InVzZXIiLCJwcmluY2lwYWwiOiJ1c2VyIiwiY3JlZGVudGlhbHMiOiJbUFJPVEVDVEVEXSIsImF1dGhvcml0aWVzIjpbIlVTRVIiXX0.E-wHrx_7sp2xSloSMoVuVCNY5OdZ6Wh80BomoSAH8XSWSSrD8WB52EInr6Pc6HQKc6ZLzegGY7kDbqxV3ipwtQ";
 
     @Test
@@ -62,18 +56,18 @@ class AuthControllerTest {
 
     @Test
     void updateUserTest() {
-        RegisterRequest request = buildRegisterRequest();
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        UserUpdateRequest request = modelMapper.map(buildRegisterRequest(), UserUpdateRequest.class);
+        UserDTO user = authService.getUserDTO(request.getEmail());
         int size = user.getAuthorities().size();
-//        assertEquals(size, 1);
+        assertEquals(1, size);
 
         request.setAuthority(ADMIN);
-        User update = authService.update(request);
+        UserDTO update = authService.update(request);
         assertNotNull(update);
 
-        user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        user = authService.getUserDTO(request.getEmail());
         size = user.getAuthorities().size();
-        assertEquals(size, 2);
+        assertEquals(2, size);
     }
 
     @Test

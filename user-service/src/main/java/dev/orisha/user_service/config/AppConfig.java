@@ -20,7 +20,7 @@ public class AppConfig {
 
     @Bean
     public ModelMapper modelMapper() {
-        ModelMapper modelMapper = new ModelMapper();
+        final ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setMatchingStrategy(STRICT)
                 .setPropertyCondition(isNotNull());

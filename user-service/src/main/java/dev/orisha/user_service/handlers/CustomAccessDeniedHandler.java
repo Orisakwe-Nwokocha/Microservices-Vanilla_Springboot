@@ -39,7 +39,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         errorResponse.setType(DEFAULT_TYPE);
         errorResponse.setTitle(FORBIDDEN.getReasonPhrase());
         errorResponse.setStatus(SC_FORBIDDEN);
-        errorResponse.setDetail(accessDeniedException.getMessage());
+        errorResponse.setDetail("%s: You do not have permission to access this resource".formatted(accessDeniedException.getMessage()));
         errorResponse.setPath(request.getRequestURI());
         errorResponse.setMessage(String.format(MESSAGE_KEY, SC_FORBIDDEN));
 

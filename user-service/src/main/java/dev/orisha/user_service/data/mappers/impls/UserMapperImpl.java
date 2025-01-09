@@ -1,20 +1,28 @@
 package dev.orisha.user_service.data.mappers.impls;
 
-import dev.orisha.user_service.data.constants.Authority;
 import dev.orisha.user_service.data.mappers.UserMapper;
 import dev.orisha.user_service.data.models.User;
 import dev.orisha.user_service.dto.UserDTO;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class UserMapperImpl implements UserMapper {
 
+    private final ModelMapper modelMapper;
+
+    @Autowired
+    public UserMapperImpl(final ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
+
     @Override
-    public UserDTO toDto(User entity) {
+    public UserDTO toDto(final User entity) {
         if (entity == null) return null;
 
         UserDTO userDTO = new UserDTO();
@@ -32,17 +40,42 @@ public class UserMapperImpl implements UserMapper {
     }
 
     @Override
-    public User toEntity(UserDTO dto) {
-        return null;
+    public User toEntity(final UserDTO dto) {
+        if (dto == null) return null;
+
+        User user = new User();
+
+        user.setId(dto.getId());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
+        user.setAuthorities(dto.getAuthorities());
+
+        return user;
+
     }
 
     @Override
     public List<UserDTO> toDtoList(List<User> entityList) {
-        return List.of();
+        if (entityList == null) return null;
+        return entityList.stream()
+                .map(this::toDto)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
     public List<User> toEntityList(List<UserDTO> dtoList) {
-        return List.of();
+        if (dtoList == null) return null;
+        return dtoList.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public void partialUpdate(User entity, UserDTO dto) {
+        if (dto != null) {
+            modelMapper.map(dto, entity);
+        }
     }
 }

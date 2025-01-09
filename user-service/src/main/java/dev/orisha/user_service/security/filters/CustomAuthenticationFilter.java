@@ -128,6 +128,8 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         return authorities
                 .stream()
                 .map(GrantedAuthority::getAuthority)
+
+
                 .toArray(String[]::new);
     }
 
