@@ -14,6 +14,10 @@ public class Todo {
      * TODO: refactor update user logic and add request constraints
      * TODO: error response (auth/authz/request validation aside) should follow
      *       the same pattern as the api response
+     * TODO: possible pagination to fetch all users for more robust requests
+     * TODO: MissingServletRequestParameterException handler
+     * TODO: refactor integration and services tests
+
      *
      *
      */

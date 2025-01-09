@@ -1,6 +1,6 @@
 package dev.orisha.user_service.dto;
 
-import dev.orisha.user_service.data.constants.Authority;
+import dev.orisha.user_service.data.enums.Authority;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

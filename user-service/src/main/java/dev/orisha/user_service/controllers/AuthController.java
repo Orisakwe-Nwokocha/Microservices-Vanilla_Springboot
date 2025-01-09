@@ -1,32 +1,23 @@
 package dev.orisha.user_service.controllers;
 
-import dev.orisha.user_service.dto.UserDTO;
 import dev.orisha.user_service.dto.requests.RegisterRequest;
-import dev.orisha.user_service.dto.requests.UserUpdateRequest;
-import dev.orisha.user_service.dto.responses.ApiResponse;
 import dev.orisha.user_service.security.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-//TODO: possible removal of wildcard
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
-
+import static dev.orisha.user_service.controllers.constants.ApplicationUrls.*;
 import static dev.orisha.user_service.security.utils.SecurityUtils.JWT_PREFIX;
-import static java.time.LocalDateTime.now;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(BASE_AUTH_URL)
 @Slf4j
 public class AuthController {
-
-    private static final String BASE_URL = "/api/v1/auth";
 
     private final AuthService authService;
 
@@ -35,27 +26,18 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping(BASE_URL + "/register")
+    @PostMapping(REGISTER_URL)
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(CREATED).body(authService.register(request));
     }
 
-    @PostMapping(BASE_URL + "/logout")
+    @DeleteMapping(LOGOUT_URL)
     public ResponseEntity<?> logout(@RequestHeader(AUTHORIZATION) String token) {
+        log.info("Logout request received: {}", token);
         token = token.replace(JWT_PREFIX, "").strip();
         authService.blacklist(token);
         SecurityContextHolder.clearContext();
         return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/update")
-    public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequest request, Principal principal) {
-        //use the principal for further auth/authz
-        log.info("REST request to update user: {}", request);
-        UserDTO update = authService.update(request);
-        log.info("User updated: {}", update);
-        ApiResponse<UserDTO> response = new ApiResponse<>(now(), true, update);
-        return ResponseEntity.ok(response);
     }
 
 }

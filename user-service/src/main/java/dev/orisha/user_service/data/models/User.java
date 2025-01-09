@@ -1,6 +1,6 @@
 package dev.orisha.user_service.data.models;
 
-import dev.orisha.user_service.data.constants.Authority;
+import dev.orisha.user_service.data.enums.Authority;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.EAGER;
 import static java.time.LocalDateTime.now;
 
 @Getter

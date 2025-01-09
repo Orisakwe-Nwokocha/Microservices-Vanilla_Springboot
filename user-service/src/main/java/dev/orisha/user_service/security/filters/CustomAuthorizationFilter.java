@@ -36,7 +36,6 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     private final AuthService authService;
     private final AppConfig appConfig;
-//    private final UserDetailsService userDetailsService;
 
     @Autowired
     public CustomAuthorizationFilter(final AuthService authService, final AppConfig appConfig) {

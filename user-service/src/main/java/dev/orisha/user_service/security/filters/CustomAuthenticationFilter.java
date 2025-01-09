@@ -85,6 +85,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         LoginResponse loginResponse = buildLoginResponse(token);
         ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(now(), true, loginResponse);
         response.setContentType(APPLICATION_JSON_VALUE);
+        String json = mapper.writeValueAsString(apiResponse);
+        System.out.println(json);
+        log.info("json: {}", json);
         response.getOutputStream().write(mapper.writeValueAsBytes(apiResponse));
         response.flushBuffer();
 
